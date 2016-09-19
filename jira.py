@@ -9,7 +9,8 @@ CONFIG_TEMPLATE = {'URL': "http://jira.example.com",
                    'PROJECTS': ['FOO', 'BAR'],
                    'KERBEROS': True,
                    'USERNAME': 'foo',
-                   'PASSWORD': 'bar'
+                   'PASSWORD': 'bar',
+                   'SSL_VERIFY': True
                   }
 
 class Jira(BotPlugin):
@@ -51,7 +52,8 @@ class Jira(BotPlugin):
             cookie = ''
         response = requests.get(
             self.config['URL']+'/rest/api/latest/issue/'+issue_id+'.json',
-            headers={"Cookie": "JSESSIONID=%s" % cookie}, verify=False)
+            headers={"Cookie": "JSESSIONID=%s" % cookie},
+            verify=self.config('SSL_VERIFY'))
         logging.info("[JIRA] got response %s" % response.status_code)
         return response
 
