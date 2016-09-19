@@ -3,7 +3,14 @@ import logging
 import re
 import requests
 from requests_kerberos import HTTPKerberosAuth, DISABLED
+from itertools import chain
 
+CONFIG_TEMPLATE = {'URL': "http://jira.example.com",
+                   'PROJECTS': ['FOO', 'BAR'],
+                   'KERBEROS': True,
+                   'USERNAME': 'foo',
+                   'PASSWORD': 'bar'
+                  }
 
 class Jira(BotPlugin):
     """A plugin for interacting with Atlassian JIRA"""
@@ -12,8 +19,22 @@ class Jira(BotPlugin):
 
     def get_configuration_template(self):
         """Defines the configuration structure this plugin supports"""
-        return {'URL': "http://jira.example.com",
-                'PROJECTS': ['FOO', 'BAR']}
+        return CONFIG_TEMPLATE
+
+    def configure(self, configuration):
+        """
+        Creates a Python dictionary object which contains all the values from our
+        CONFIG_TEMPLATE and then updates that dictionary with the configuration
+        received when calling the "!plugin config JIRA" command.
+        """
+
+        if configuration is not None and configuration != {}:
+            config = dict(chain(CONFIG_TEMPLATE.items(),
+                                configuration.items()))
+        else:
+            config = CONFIG_TEMPLATE
+        super(Jira, self).configure(config)
+
 
     def get_cookie(self):
         r = requests.get(self.config['URL']+'/step-auth-gss',
